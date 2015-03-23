@@ -91,6 +91,11 @@ title = community.name
             <tr>
                 <th></th>
                 <th>{{ _('Username') }}</th>
+                <th>{{ _('Team') }}</th>
+                <th>{{ _('Gives') }}</th>
+                <th>{{ _('Receives') }}</th>
+                <th>{{ _('Goal') }}</th>
+                <th>{{ _('First Tagged') }}</th>
             </tr>
         </thead>
         <tfoot><tr><td colspan=6><div class="loading-indicator"/></td></tr></foot>

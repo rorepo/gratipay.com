@@ -16,11 +16,9 @@ if not community:
     # Community not found
     raise Response(404)
 
-community_members = community.get_members()
-
 [---] application/json via json_dump
 { "name": community.name
 , "slug": community.slug
 , "total": community.nmembers
-, "members": [p.to_dict() for p in community_members]
+, "members": community.get_members()
  }

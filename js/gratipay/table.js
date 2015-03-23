@@ -19,13 +19,19 @@ Gratipay.table = (function() {
     function renderRows(records) {
         nrecords = records.length;
         var rows = [];
+        var checkmark = function() { $('<span>').html('&#x2713;')[0] };
 
         for (var i=0, len=records.length; i<len; i++) {
             var record = records[i];
             rows.push(Gratipay.jsonml(
                 [ 'tr'
-                , ['td', {'class': 'n'}, nrecords-i]
+                , ['td', {'class': 'n'}, record.n]
                 , ['td', ['a', {'href': '/'+record.username+'/'}, record.username]]
+                , ['td', record.number === 'singular' ? '' : '✓']
+                , ['td', record.giving === null ? '-' : record.giving]
+                , ['td', record.receiving === null ? '-' : record.receiving]
+                , ['td', record.goal > 0 ? record.goal : '-']
+                , ['td', record.first_tagged]
                  ]
             ));
         }
