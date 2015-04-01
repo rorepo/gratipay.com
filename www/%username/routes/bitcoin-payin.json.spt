@@ -15,5 +15,6 @@ try:
 except InvalidOperation:
 	raise Response(400, "Invalid Amount!")
 
+accounts = website.coinbase.get_authorization()
 [---]
-{}
+{{ accounts }}
