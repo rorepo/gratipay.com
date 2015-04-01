@@ -332,16 +332,24 @@ Gratipay.payments.cc.submit = function(e) {
 Gratipay.payments.bc = {};
 
 Gratipay.payments.bc.init = function () {
-    $('form#bitcoin-payin').submit(Gratipay.payments.bc.createOrder);
+    $('button#pay').click(Gratipay.payments.bc.createOrder);
 };
 
 Gratipay.payments.bc.createOrder = function () {
     var amount = $('form#bitcoin-payin input#amount').val();
+    $('button#pay').prop('disabled', true);
     jQuery.ajax({
         url: "/" + Gratipay.username + "/routes/bitcoin-payin.json",
-        data: { amount: amount },
+        data: {},
         type: "POST",
-        success: function(data) {},
+        success: function(data) {
+            var iframe = $('<iframe src="https://sandbox.coinbase.com/checkouts/' +
+                           data.code +
+                           '/inline"' +
+                           'frameborder="0"></iframe>');
+            $('button#pay').remove();
+            $('.coinbase-box').append(iframe);
+        },
         error: Gratipay.error
     });
     return false;

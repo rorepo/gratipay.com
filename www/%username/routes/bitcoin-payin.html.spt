@@ -12,7 +12,6 @@ title = _("Bitcoin Payin")
     <h1>{{ _("Bitcoin Payin") }}</h1>
     <p>{{ _("We currently support one-time payins via Bitcoin.") }}
     {{ _("You can either send bitcoins manually, or use your coinbase account to complete the transaction.") }}
-
 {% endblock %}
 
 {% block scripts %}
@@ -29,16 +28,14 @@ title = _("Bitcoin Payin")
 {% endblock %}
 
 {% block content %}
-  {% if user.ANON %}
-    {% include "templates/sign-in-using.html" %}
-    {{ _("and then you'll be able to payin with bitcoin.") }}
-  {% else %}
-    <form id="bitcoin-payin">
-        <label for="amount">Amount:</label>
-        $ <input name="amount" id="amount" type="text">
-        <button class="selected larger" type="submit">{{ _("Pay") }}</button>
-    </form>
 
-  {% endif %}
+    {% if user.ANON %}
+        {% include "templates/sign-in-using.html" %}
+        {{ _("and then you'll be able to payin with bitcoin.") }}
+    {% else %}
+        <div class="coinbase-box">
+            <button class="selected larger" id="pay">{{ _("Pay") }}</button>
+        </div>
+    {% endif %}
 
 {% endblock %}
