@@ -69,6 +69,7 @@ def mail(env, project_root='.'):
 def billing(website, env):
     balanced.configure(env.balanced_api_secret)
     website.coinbase = Coinbase(env.coinbase_api_key, env.coinbase_api_secret)
+    website.coinbase.BASE_API_URI = 'https://api.sandbox.coinbase.com/v1/'
 
 
 def username_restrictions(website):
