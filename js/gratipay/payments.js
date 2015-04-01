@@ -325,3 +325,24 @@ Gratipay.payments.cc.submit = function(e) {
     balanced.card.create(credit_card, Gratipay.payments.associate('balanced-cc'));
     return false;
 };
+
+// Bitcoin Payin
+// =============
+
+Gratipay.payments.bc = {};
+
+Gratipay.payments.bc.init = function () {
+    $('form#bitcoin-payin').submit(Gratipay.payments.bc.createOrder);
+};
+
+Gratipay.payments.bc.createOrder = function () {
+    var amount = $('form#bitcoin-payin input#amount').val();
+    jQuery.ajax({
+        url: "/" + Gratipay.username + "/routes/bitcoin-payin.json",
+        data: { amount: amount },
+        type: "POST",
+        success: function(data) {},
+        error: Gratipay.error
+    });
+    return false;
+}

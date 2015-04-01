@@ -1,0 +1,19 @@
+from decimal import Decimal, InvalidOperation
+
+from gratipay.utils import get_participant
+from aspen import Response
+
+[---]
+
+request.allow('POST')
+
+get_participant(state, restrict=True)
+
+amount = request.body['amount']
+try:
+	amount = Decimal(amount)
+except InvalidOperation:
+	raise Response(400, "Invalid Amount!")
+
+[---]
+{}
