@@ -117,7 +117,7 @@ class TestCoinbaseCallback(Harness):
         assert re.call_count == 1
         assert re.call_args[0][0] == self.db
         assert re.call_args[0][1].id == route.id
-        assert re.call_args[0][2:4] == (D('-0.99'), D('0.01')) # Amount, Fee
+        assert re.call_args[0][2:4] == (D('0.99'), D('0.01')) # Amount, Fee
         assert re.call_args[0][4].id == alice.id
         assert re.call_args[0][5] == 'succeeded' # Status
 

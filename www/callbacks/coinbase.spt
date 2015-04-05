@@ -40,7 +40,7 @@ if order:
         amount = int(order['total_payout']['cents']) * D('0.01')
         fee = int(order['total_native']['cents']) * D('0.01') - amount
 
-        record_exchange(website.db, route, -amount, fee, participant, 'succeeded')
+        record_exchange(website.db, route, amount, fee, participant, 'succeeded')
     # TODO - handle mispayments
 
 [---] text/plain
