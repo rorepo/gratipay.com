@@ -265,7 +265,7 @@ class TestFees(Harness):
 
 class TestRecordExchange(Harness):
 
-    def test_record_exchange_doesnt_update_balance_for_positive_amounts(self):
+    def test_record_exchange_doesnt_update_balance_for_cc_charges(self):
         alice = self.make_participant('alice', last_bill_result='')
         record_exchange( self.db
                        , ExchangeRoute.from_network(alice, 'balanced-cc')
@@ -277,7 +277,7 @@ class TestRecordExchange(Harness):
         alice = Participant.from_username('alice')
         assert alice.balance == D('0.00')
 
-    def test_record_exchange_updates_balance_for_negative_amounts(self):
+    def test_record_exchange_updates_balance_for_ach_credits(self):
         alice = self.make_participant('alice', balance=50, last_ach_result='')
         record_exchange( self.db
                        , ExchangeRoute.from_network(alice, 'balanced-ba')
@@ -289,13 +289,7 @@ class TestRecordExchange(Harness):
         alice = Participant.from_username('alice')
         assert alice.balance == D('13.41')
 
-    def test_record_exchange_fails_if_negative_balance(self):
-        alice = self.make_participant('alice', last_ach_result='')
-        ba = ExchangeRoute.from_network(alice, 'balanced-ba')
-        with pytest.raises(NegativeBalance):
-            record_exchange(self.db, ba, D("-10.00"), D("0.41"), alice, 'pre')
-
-    def test_record_exchange_result_restores_balance_on_error(self):
+    def test_record_exchange_result_restores_balance_on_ach_credit_failure(self):
         alice = self.make_participant('alice', balance=30, last_ach_result='')
         ba = ExchangeRoute.from_network(alice, 'balanced-ba')
         e_id = record_exchange(self.db, ba, D('-27.06'), D('0.81'), alice, 'pre')
@@ -303,6 +297,30 @@ class TestRecordExchange(Harness):
         record_exchange_result(self.db, e_id, 'failed', 'SOME ERROR', alice)
         alice = Participant.from_username('alice')
         assert alice.balance == D('30.00')
+
+    def test_record_exchange_result_doesnt_update_balance_on_ach_credit_success(self):
+        alice = self.make_participant('alice', balance=50, last_ach_result='')
+        ba = ExchangeRoute.from_network(alice, 'balanced-ba')
+        e_id = record_exchange(self.db, ba, D('-43.98'), D('1.60'), alice, 'pre')
+        assert alice.balance == D('4.42')
+        record_exchange_result(self.db, e_id, 'succeeded', None, alice)
+        alice = Participant.from_username('alice')
+        assert alice.balance == D('4.42')
+
+    def test_record_exchange_result_updates_balance_for_cc_charges(self):
+        alice = self.make_participant('alice', balance=4, last_bill_result='')
+        cc = ExchangeRoute.from_network(alice, 'balanced-cc')
+        e_id = record_exchange(self.db, cc, D('31.59'), D('0.01'), alice, 'pre')
+        assert alice.balance == D('4.00')
+        record_exchange_result(self.db, e_id, 'succeeded', None, alice)
+        alice = Participant.from_username('alice')
+        assert alice.balance == D('35.59')
+
+    def test_record_exchange_fails_if_negative_balance(self):
+        alice = self.make_participant('alice', last_ach_result='')
+        ba = ExchangeRoute.from_network(alice, 'balanced-ba')
+        with pytest.raises(NegativeBalance):
+            record_exchange(self.db, ba, D("-10.00"), D("0.41"), alice, 'pre')
 
     def test_record_exchange_result_restores_balance_on_error_with_invalidated_route(self):
         alice = self.make_participant('alice', balance=37, last_ach_result='')
@@ -314,24 +332,6 @@ class TestRecordExchange(Harness):
         alice = Participant.from_username('alice')
         assert alice.balance == D('37.00')
         assert ba.error == alice.get_bank_account_error() == 'invalidated'
-
-    def test_record_exchange_result_doesnt_restore_balance_on_success(self):
-        alice = self.make_participant('alice', balance=50, last_ach_result='')
-        ba = ExchangeRoute.from_network(alice, 'balanced-ba')
-        e_id = record_exchange(self.db, ba, D('-43.98'), D('1.60'), alice, 'pre')
-        assert alice.balance == D('4.42')
-        record_exchange_result(self.db, e_id, 'succeeded', None, alice)
-        alice = Participant.from_username('alice')
-        assert alice.balance == D('4.42')
-
-    def test_record_exchange_result_updates_balance_for_positive_amounts(self):
-        alice = self.make_participant('alice', balance=4, last_bill_result='')
-        cc = ExchangeRoute.from_network(alice, 'balanced-cc')
-        e_id = record_exchange(self.db, cc, D('31.59'), D('0.01'), alice, 'pre')
-        assert alice.balance == D('4.00')
-        record_exchange_result(self.db, e_id, 'succeeded', None, alice)
-        alice = Participant.from_username('alice')
-        assert alice.balance == D('35.59')
 
 
 class TestSyncWithBalanced(BalancedHarness):

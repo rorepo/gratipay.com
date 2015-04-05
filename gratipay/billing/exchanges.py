@@ -289,10 +289,18 @@ def record_exchange(db, route, amount, fee, participant, status, error=''):
          RETURNING id
         """, (amount, fee, participant.username, status, route.id))
 
+        # For payouts, we need to take the fee out of their Gratipay balance.
+        if amount < 0:
+            amount -= fee
+
         if status == 'failed':
             propagate_exchange(cursor, participant, route, error, 0)
-        elif amount < 0:
-            amount -= fee
+        elif route.network == 'balanced-ba':
+            assert amount < 0
+            # Always update balance for ach credits, as long as status is not 'failed'
+            propagate_exchange(cursor, participant, route, '', amount)
+        elif status == 'succeeded':
+            # For all other routes, only update balance if status is 'succeeded'
             propagate_exchange(cursor, participant, route, '', amount)
 
     return exchange_id
@@ -317,8 +325,13 @@ def record_exchange_result(db, exchange_id, status, error, participant):
         assert participant.username == username
         assert isinstance(route, ExchangeRoute)
 
+        # For payouts, we need to take the fee out of their Gratipay balance.
         if amount < 0:
             amount -= fee
+
+        if route.network == 'balanced-ba':
+            assert amount < 0
+            # Only restore balance if ach credit fails.
             amount = amount if status == 'failed' else 0
             propagate_exchange(cursor, participant, route, error, -amount)
         else:
