@@ -66,11 +66,14 @@ def mail(env, project_root='.'):
         emails[base_name] = compile_email_spt(spt)
     Participant._emails = emails
 
-def billing(website, env):
+def billing(env):
     balanced.configure(env.balanced_api_secret)
-    website.coinbase = Coinbase(env.coinbase_api_key, env.coinbase_api_secret)
-    website.coinbase.BASE_API_URI = 'https://api.sandbox.coinbase.com/v1/'
 
+def coinbase(env):
+    coinbase = Coinbase(env.coinbase_api_key, env.coinbase_api_secret)
+    coinbase.BASE_API_URI = 'https://api.sandbox.coinbase.com/v1/'
+
+    return coinbase
 
 def username_restrictions(website):
     gratipay.RESTRICTED_USERNAMES = os.listdir(website.www_root)
