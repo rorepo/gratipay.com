@@ -1,1 +1,1 @@
-ALTER TYPE payment_net ADD VALUE 'bitcoin-payin';
+ALTER TYPE payment_net ADD VALUE 'coinbase-payin';

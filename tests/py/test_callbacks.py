@@ -111,7 +111,7 @@ class TestCoinbaseCallback(Harness):
         assert r.code == 200, r.body
 
         # Must create a route
-        route = ExchangeRoute.from_address(alice, 'bitcoin-payin', '10N9LK1Q')
+        route = ExchangeRoute.from_address(alice, 'coinbase-payin', '10N9LK1Q')
         assert isinstance(route, ExchangeRoute)
 
         assert re.call_count == 1

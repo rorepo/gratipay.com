@@ -26,11 +26,11 @@ if order:
     participant = Participant.from_id(int(order['custom']))
 
     # Check if a route corresponding to the order ID already exists.
-    route = ExchangeRoute.from_address(participant, 'bitcoin-payin', order['id'])
+    route = ExchangeRoute.from_address(participant, 'coinbase-payin', order['id'])
 
     # If not, create one.
     if not isinstance(route, ExchangeRoute):
-        route = ExchangeRoute.insert(participant, 'bitcoin-payin', order['id'])
+        route = ExchangeRoute.insert(participant, 'coinbase-payin', order['id'])
 
     status = order['status']
 
