@@ -19,7 +19,8 @@ try:
         "USD", # price_currency_iso
         description="Gratipay Bitcoin Payin",
         choose_price=True,
-        custom_secure=participant.id
+        custom=participant.id,
+        custom_secure=True
     )
     out['code'] = result.code
 except APIError:
