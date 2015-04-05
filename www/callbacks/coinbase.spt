@@ -18,28 +18,28 @@ request.allow('POST')
 
 # TODO - Check for coinbase secret here.
 
-order = request.body['order']
-# TODO - handle non-order callbacks
+order = request.body.get('order', None)
 
-# Fetch the participant from the order's 'custom' attribute.
-participant = Participant.from_id(order['custom'])
+if order:
+    # Fetch the participant from the order's 'custom' attribute.
+    participant = Participant.from_id(int(order['custom']))
 
-# Check if a route corresponding to the order ID already exists.
-route = ExchangeRoute.from_address(participant, 'bitcoin-payin', order['id'])
+    # Check if a route corresponding to the order ID already exists.
+    route = ExchangeRoute.from_address(participant, 'bitcoin-payin', order['id'])
 
-# If not, create one.
-if not isinstance(route, ExchangeRoute):
-	route = ExchangeRoute.insert(participant, 'bitcoin-payin', order['id'])
+    # If not, create one.
+    if not isinstance(route, ExchangeRoute):
+        route = ExchangeRoute.insert(participant, 'bitcoin-payin', order['id'])
 
-status = order['status']
+    status = order['status']
 
-if status == 'completed':
-	assert order['total_native']['currency_iso'] == 'USD'
-	assert order['total_payout']['currency_iso'] == 'USD'
-	amount = int(order['total_payout']['cents']) * D('0.01')
-	fee = int(order['total_native']['cents']) * D('0.01') - amount
+    if status == 'completed':
+        assert order['total_native']['currency_iso'] == 'USD'
+        assert order['total_payout']['currency_iso'] == 'USD'
+        amount = int(order['total_payout']['cents']) * D('0.01')
+        fee = int(order['total_native']['cents']) * D('0.01') - amount
 
-	record_exchange(website.db, route, amount, fee, participant, 'succeeded')
-# TODO - handle mispayments
+        record_exchange(website.db, route, -amount, fee, participant, 'succeeded')
+    # TODO - handle mispayments
 
 [---] text/plain

@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import json
 
+from decimal import Decimal as D
 from mock import patch
 
 from gratipay.billing.exchanges import record_exchange
@@ -31,11 +32,11 @@ class TestBalancedCallbacks(Harness):
 
     @patch('gratipay.billing.exchanges.record_exchange_result')
     def test_credit_callback(self, rer):
-        alice = self.make_participant('alice', last_ach_result='')
+        alice = self.make_participant('alice', last_ach_result='', balance=100)
         ba = ExchangeRoute.from_network(alice, 'balanced-ba')
         for status in ('succeeded', 'failed'):
             error = 'FOO' if status == 'failed' else None
-            e_id = record_exchange(self.db, ba, 10, 0, alice, 'pre')
+            e_id = record_exchange(self.db, ba, -10, 0, alice, 'pre')
             body = json.dumps({
                 "events": [
                     {
@@ -62,3 +63,54 @@ class TestBalancedCallbacks(Harness):
             assert rer.call_args[0][-1].id == alice.id
             assert rer.call_args[1] == {}
             rer.reset_mock()
+
+class TestCoinbaseCallback(Harness):
+
+    def callback(self, *a, **kw):
+        kw.setdefault('content_type', 'application/json')
+        kw.setdefault('raise_immediately', False)
+        return self.client.POST('/callbacks/coinbase', **kw)
+
+    # def test_simplate_checks_secret_key(self):
+
+    def test_simplate_doesnt_require_a_csrf_token(self):
+        r = self.callback(body=b'{}', csrf_token=False)
+        assert r.code == 200, r.body
+
+    def test_no_csrf_cookie_set_for_callbacks(self):
+        r = self.callback(body=b'{}', csrf_token=False)
+        assert b'csrf_token' not in r.headers.cookie
+
+    @patch('gratipay.billing.exchanges.record_exchange')
+    def test_coinbase_success_callback(self, re):
+        alice = self.make_participant('alice')
+        body = json.dumps({
+            "order": {
+                "id": "10N9LK1Q",
+                "status": "completed",
+                "total_native": {
+                    "cents": 100,
+                    "currency_iso": "USD"
+                },
+                "total_payout": {
+                    "cents": 99,
+                    "currency_iso": "USD"
+                },
+                "custom": alice.id,
+            }
+        })
+
+        r = self.callback(body=body, csrf_token=False)
+        assert r.code == 200, r.body
+
+        # Must create a route
+        route = ExchangeRoute.from_address(alice, 'bitcoin-payin', '10N9LK1Q')
+        assert isinstance(route, ExchangeRoute)
+
+        assert re.call_count == 1
+        assert re.call_args[0][0] == self.db
+        assert re.call_args[0][1].id == route.id
+        assert re.call_args[0][2:4] == (D('-0.99'), D('0.01')) # Amount, Fee
+        assert re.call_args[0][4].id == alice.id
+        assert re.call_args[0][5] == 'succeeded' # Status
+
