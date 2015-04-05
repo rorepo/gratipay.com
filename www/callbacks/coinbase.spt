@@ -16,7 +16,8 @@ from gratipay.models.participant import Participant
 
 request.allow('POST')
 
-# TODO - Check for coinbase secret here.
+if request.qs.get('secret_key') != website.coinbase_secret_key:
+    raise Response(401)
 
 order = request.body.get('order', None)
 

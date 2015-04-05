@@ -67,11 +67,18 @@ class TestBalancedCallbacks(Harness):
 class TestCoinbaseCallback(Harness):
 
     def callback(self, *a, **kw):
+        kw.setdefault('csrf_token', False)
         kw.setdefault('content_type', 'application/json')
         kw.setdefault('raise_immediately', False)
-        return self.client.POST('/callbacks/coinbase', **kw)
 
-    # def test_simplate_checks_secret_key(self):
+        secret_key = kw.pop('secret_key', self.client.website.coinbase_secret_key)
+        url = '/callbacks/coinbase?secret_key=%s' % secret_key
+
+        return self.client.POST(url, **kw)
+
+    def test_simplate_checks_secret_key(self):
+        r = self.callback(body=b'{}', secret_key='wrong_key')
+        assert r.code == 401, r.body
 
     def test_simplate_doesnt_require_a_csrf_token(self):
         r = self.callback(body=b'{}', csrf_token=False)
@@ -100,7 +107,7 @@ class TestCoinbaseCallback(Harness):
             }
         })
 
-        r = self.callback(body=body, csrf_token=False)
+        r = self.callback(body=body)
         assert r.code == 200, r.body
 
         # Must create a route

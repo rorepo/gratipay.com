@@ -63,6 +63,7 @@ gratipay.wireup.canonical(env)
 website.db = gratipay.wireup.db(env)
 website.mailer = gratipay.wireup.mail(env, website.project_root)
 website.coinbase = gratipay.wireup.coinbase(env)
+website.coinbase_secret_key = env.coinbase_secret_key
 gratipay.wireup.billing(env)
 gratipay.wireup.username_restrictions(website)
 gratipay.wireup.load_i18n(website.project_root, tell_sentry)

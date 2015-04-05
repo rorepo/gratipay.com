@@ -352,6 +352,7 @@ def env():
         BALANCED_API_SECRET             = unicode,
         COINBASE_API_KEY                = unicode,
         COINBASE_API_SECRET             = unicode,
+        COINBASE_SECRET_KEY             = unicode,
         GITHUB_CLIENT_ID                = unicode,
         GITHUB_CLIENT_SECRET            = unicode,
         GITHUB_CALLBACK                 = unicode,
