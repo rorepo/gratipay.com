@@ -13,13 +13,14 @@ account = website.coinbase.get_account('primary')
 out = {}
 
 try:
-    out = account.create_button(
+    result = account.create_button(
         "Gratipay (%s)" % participant.username, # name
         "100", # price_string
         "USD", # price_currency_iso
         description="Gratipay Bitcoin Payin",
         choose_price=True
     )
+    out['code'] = result.code
 except APIError:
     raise Response(500, "We're having trouble communicating with Coinbase, please try again.")
 [---]
