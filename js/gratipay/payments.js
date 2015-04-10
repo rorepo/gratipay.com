@@ -358,19 +358,21 @@ Gratipay.payments.bc.createOrder = function () {
 }
 
 Gratipay.payments.bc.handleMessages = function () {
-    var coinbase_sources = ['https://www.coinbase.com', 'https://sandbox.coinbase.com']
+    var coinbase_sources = ['https://www.coinbase.com', 'https://sandbox.coinbase.com'];
+
+    var msg = {
+        success: $('.coinbase-box').data('success-msg'),
+        mispaid: $('.coinbase-box').data('mispaid-msg')
+    }
 
     if (coinbase_sources.indexOf(event.origin) != -1) {
         var event_type = event.data.split('|')[0];
 
         if (event_type == 'coinbase_payment_complete') {
-            Gratipay.notification('Your payment succeeded!', 'success');
+            Gratipay.notification(msg.success, 'success');
         }
         else if (event_type == 'coinbase_payment_mispaid') {
-            Gratipay.notification(
-                'Your paid the wrong amount, contact support to reclaim the mispaid bitcoin.',
-                'error'
-            );
+            Gratipay.notification(msg.mispaid, 'error');
         }
     }
 }
