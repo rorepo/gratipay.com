@@ -34,6 +34,7 @@ if order:
 
     status = order['status']
 
+    # We're ignoring mispayments/expired orders here.
     if status == 'completed':
         assert order['total_native']['currency_iso'] == 'USD'
         assert order['total_payout']['currency_iso'] == 'USD'
@@ -41,6 +42,10 @@ if order:
         fee = int(order['total_native']['cents']) * D('0.01') - amount
 
         record_exchange(website.db, route, amount, fee, participant, 'succeeded')
-    # TODO - handle mispayments
+        participant.queue_email(
+            'coinbase_success',
+            amount=amount
+        )
+
 
 [---] text/plain
