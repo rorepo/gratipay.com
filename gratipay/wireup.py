@@ -71,7 +71,9 @@ def billing(env):
 
 def coinbase(env):
     coinbase = Coinbase(env.coinbase_api_key, env.coinbase_api_secret)
-    coinbase.BASE_API_URI = 'https://api.sandbox.coinbase.com/v1/'
+
+    if env.coinbase_sandbox_mode:
+        coinbase.BASE_API_URI = 'https://api.sandbox.coinbase.com/v1/'
 
     return coinbase
 
@@ -353,6 +355,7 @@ def env():
         COINBASE_API_KEY                = unicode,
         COINBASE_API_SECRET             = unicode,
         COINBASE_SECRET_KEY             = unicode,
+        COINBASE_SANDBOX_MODE           = is_yesish,
         GITHUB_CLIENT_ID                = unicode,
         GITHUB_CLIENT_SECRET            = unicode,
         GITHUB_CALLBACK                 = unicode,

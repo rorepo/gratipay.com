@@ -343,7 +343,7 @@ Gratipay.payments.bc.createOrder = function () {
         data: {},
         type: "POST",
         success: function(data) {
-            var iframe = $('<iframe src="https://sandbox.coinbase.com/checkouts/' +
+            var iframe = $('<iframe src="' + data.iframe_base_url +
                            data.code +
                            '/inline"' +
                            'frameborder="0"></iframe>');
