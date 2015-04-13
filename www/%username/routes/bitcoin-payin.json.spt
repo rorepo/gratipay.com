@@ -30,6 +30,6 @@ try:
         out['iframe_base_url'] = "https://www.coinbase.com/checkouts/"
 
 except APIError:
-    raise Response(500, "We're having trouble communicating with Coinbase, please try again.")
+    raise Response(502, _("We're having trouble communicating with Coinbase, please try again."))
 [---]
 out
