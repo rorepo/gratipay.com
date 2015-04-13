@@ -71,8 +71,8 @@ def iter_payday_events(db, participant, year=None):
     exchanges = db.all("""
         SELECT *,
               ( SELECT r.*::exchange_routes
-                   FROM exchange_routes r
-                  WHERE r.id = e.route
+                  FROM exchange_routes r
+                 WHERE r.id = e.route
               ) AS route
           FROM exchanges e
          WHERE participant=%(username)s
