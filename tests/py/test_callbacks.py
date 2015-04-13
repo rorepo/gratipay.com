@@ -94,7 +94,9 @@ class TestCoinbaseCallback(Harness):
         body = json.dumps({
             "order": {
                 "id": "10N9LK1Q",
-                "status": "completed",
+                "event": {
+                    "type": "completed"
+                },
                 "total_native": {
                     "cents": 100,
                     "currency_iso": "USD"

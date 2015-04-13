@@ -32,7 +32,7 @@ if order:
     if not isinstance(route, ExchangeRoute):
         route = ExchangeRoute.insert(participant, 'coinbase-payin', order['id'])
 
-    status = order['status']
+    status = order['event']['type']
 
     # We're ignoring mispayments/expired orders here.
     if status == 'completed':
