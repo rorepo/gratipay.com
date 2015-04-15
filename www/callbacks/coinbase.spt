@@ -41,7 +41,8 @@ if order:
         amount = int(order['total_payout']['cents']) * D('0.01')
         fee = int(order['total_native']['cents']) * D('0.01') - amount
 
-        record_exchange(website.db, route, amount, fee, participant, 'succeeded')
+        e_id = record_exchange(website.db, route, amount, fee, participant, 'pre')
+        record_exchange_result(website.db, e_id, 'succeeded', None, participant)
         participant.queue_email(
             'coinbase_success',
             amount=amount

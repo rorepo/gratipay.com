@@ -89,7 +89,9 @@ class TestCoinbaseCallback(Harness):
         assert b'csrf_token' not in r.headers.cookie
 
     @patch('gratipay.billing.exchanges.record_exchange')
-    def test_coinbase_success_callback(self, re):
+    @patch('gratipay.billing.exchanges.record_exchange_result')
+    def test_coinbase_success_callback(self, rer, re):
+        re.return_value == 12345
         alice = self.make_participant('alice')
         body = json.dumps({
             "order": {
@@ -116,10 +118,13 @@ class TestCoinbaseCallback(Harness):
         route = ExchangeRoute.from_address(alice, 'coinbase-payin', '10N9LK1Q')
         assert isinstance(route, ExchangeRoute)
 
-        assert re.call_count == 1
+        assert re.call_count == rer.call_count ==  1
+
         assert re.call_args[0][0] == self.db
         assert re.call_args[0][1].id == route.id
         assert re.call_args[0][2:4] == (D('0.99'), D('0.01')) # Amount, Fee
         assert re.call_args[0][4].id == alice.id
-        assert re.call_args[0][5] == 'succeeded' # Status
+        assert re.call_args[0][5] == 'pre' # Status
 
+        assert rer.call_args[0][0:4] == (self.db, re.return_value, 'succeeded', None)
+        assert rer.call_args[0][4].id == alice.id
