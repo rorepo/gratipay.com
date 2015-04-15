@@ -66,6 +66,25 @@ class TestBalancedCallbacks(Harness):
 
 class TestCoinbaseCallback(Harness):
 
+    def payload(self, participant):
+        return {
+            "order": {
+                "id": "10N9LK1Q",
+                "event": {
+                    "type": "completed"
+                },
+                "total_native": {
+                    "cents": 100,
+                    "currency_iso": "USD"
+                },
+                "total_payout": {
+                    "cents": 99,
+                    "currency_iso": "USD"
+                },
+                "custom": participant.id,
+            }
+        }
+
     def callback(self, *a, **kw):
         kw.setdefault('csrf_token', False)
         kw.setdefault('content_type', 'application/json')
@@ -93,23 +112,7 @@ class TestCoinbaseCallback(Harness):
     def test_coinbase_success_callback(self, rer, re):
         re.return_value == 12345
         alice = self.make_participant('alice')
-        body = json.dumps({
-            "order": {
-                "id": "10N9LK1Q",
-                "event": {
-                    "type": "completed"
-                },
-                "total_native": {
-                    "cents": 100,
-                    "currency_iso": "USD"
-                },
-                "total_payout": {
-                    "cents": 99,
-                    "currency_iso": "USD"
-                },
-                "custom": alice.id,
-            }
-        })
+        body = json.dumps(self.payload(alice))
 
         r = self.callback(body=body)
         assert r.code == 200, r.body
@@ -128,3 +131,17 @@ class TestCoinbaseCallback(Harness):
 
         assert rer.call_args[0][0:4] == (self.db, re.return_value, 'succeeded', None)
         assert rer.call_args[0][4].id == alice.id
+
+    @patch('gratipay.billing.exchanges.record_exchange')
+    @patch('gratipay.billing.exchanges.record_exchange_result')
+    def test_coinbase_callback_reuses_route_if_exists(self, rer, re):
+        alice = self.make_participant('alice')
+        body = json.dumps(self.payload(alice))
+
+        # Route exists before callback
+        route = ExchangeRoute.insert(alice, 'coinbase-payin', '10N9LK1Q')
+
+        self.callback(body=body)
+
+        # Make sure it reuses the route
+        assert re.call_args[0][1].id == route.id

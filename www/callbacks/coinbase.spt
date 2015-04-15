@@ -8,6 +8,7 @@ import json
 from decimal import Decimal as D
 
 from aspen import Response
+from psycopg2 import IntegrityError
 from gratipay.billing.exchanges import record_exchange, record_exchange_result
 from gratipay.models.exchange_route import ExchangeRoute
 from gratipay.models.participant import Participant
@@ -25,12 +26,11 @@ if order:
     # Fetch the participant from the order's 'custom' attribute.
     participant = Participant.from_id(int(order['custom']))
 
-    # Check if a route corresponding to the order ID already exists.
-    route = ExchangeRoute.from_address(participant, 'coinbase-payin', order['id'])
-
-    # If not, create one.
-    if not isinstance(route, ExchangeRoute):
+    # Create a route corresponding to the order ID if it doesn't exist already.
+    try:
         route = ExchangeRoute.insert(participant, 'coinbase-payin', order['id'])
+    except IntegrityError:
+        route = ExchangeRoute.from_address(participant, 'coinbase-payin', order['id'])
 
     status = order['event']['type']
 
