@@ -25,6 +25,7 @@ order = request.body.get('order', None)
 if order:
     # Fetch the participant from the order's 'custom' attribute.
     participant = Participant.from_id(int(order['custom']))
+    assert participant
 
     # Create a route corresponding to the order ID if it doesn't exist already.
     try:
