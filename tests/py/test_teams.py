@@ -96,49 +96,10 @@ class TestOldTeams(Harness):
         actual = self.team.IS_PLURAL
         assert actual == expeted
 
-    def test_show_as_team_to_admin(self):
+    def test_show_as_team_always_returns_false(self):
         self.make_participant('alice', is_admin=True)
         user = User.from_username('alice')
-        assert self.team.show_as_team(user)
-
-    def test_show_as_team_to_team_member(self):
-        self.make_participant('alice')
-        self.team.add_member(self.make_participant('bob', claimed_time='now'))
-        user = User.from_username('bob')
-        assert self.team.show_as_team(user)
-
-    def test_show_as_team_to_non_team_member(self):
-        self.make_participant('alice')
-        self.team.add_member(self.make_participant('bob', claimed_time='now'))
-        user = User.from_username('alice')
-        assert self.team.show_as_team(user)
-
-    def test_show_as_team_to_anon(self):
-        self.make_participant('alice')
-        self.team.add_member(self.make_participant('bob', claimed_time='now'))
-        assert self.team.show_as_team(User())
-
-    def test_dont_show_individuals_as_team(self):
-        alice = self.make_participant('alice', number='singular')
-        assert not alice.show_as_team(User())
-
-    def test_dont_show_plural_no_members_as_team_to_anon(self):
-        group = self.make_participant('Group', number='plural')
-        assert not group.show_as_team(User())
-
-    def test_dont_show_plural_no_members_as_team_to_auth(self):
-        group = self.make_participant('Group', number='plural')
-        self.make_participant('alice')
-        assert not group.show_as_team(User.from_username('alice'))
-
-    def test_show_plural_no_members_as_team_to_self(self):
-        group = self.make_participant('Group', number='plural')
-        assert group.show_as_team(User.from_username('Group'))
-
-    def test_show_plural_no_members_as_team_to_admin(self):
-        group = self.make_participant('Group', number='plural')
-        self.make_participant('Admin', is_admin=True)
-        assert group.show_as_team(User.from_username('Admin'))
+        assert self.team.show_as_team(user) == False
 
     def test_can_add_members(self):
         alice = self.make_participant('alice', claimed_time='now')

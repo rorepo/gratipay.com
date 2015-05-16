@@ -25,15 +25,7 @@ class MixinTeam(object):
     def show_as_team(self, user):
         """Return a boolean, whether to show this participant as a team.
         """
-        if not self.IS_PLURAL:
-            return False
-        if user.ADMIN:
-            return True
-        if not self.get_current_takes():
-            if self == user.participant:
-                return True
-            return False
-        return True
+        return False
 
     def member_of(self, team):
         """Given a Participant object, return a boolean.
