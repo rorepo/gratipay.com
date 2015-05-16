@@ -1039,31 +1039,10 @@ class Participant(Model, MixinTeam):
         return updated
 
     def update_receiving(self, cursor=None):
-        if self.IS_PLURAL:
-            old_takes = self.compute_actual_takes(cursor=cursor)
-        r = (cursor or self.db).one("""
-            WITH our_tips AS (
-                     SELECT amount
-                       FROM current_tips
-                       JOIN participants p2 ON p2.username = tipper
-                      WHERE tippee = %(username)s
-                        AND p2.is_suspicious IS NOT true
-                        AND amount > 0
-                        AND is_funded
-                 )
-            UPDATE participants p
-               SET receiving = (COALESCE((
-                       SELECT sum(amount)
-                         FROM our_tips
-                   ), 0) + taking)
-                 , npatrons = COALESCE((SELECT count(*) FROM our_tips), 0)
-             WHERE p.username = %(username)s
-         RETURNING receiving, npatrons
-        """, dict(username=self.username))
-        self.set_attributes(receiving=r.receiving, npatrons=r.npatrons)
-        if self.IS_PLURAL:
-            new_takes = self.compute_actual_takes(cursor=cursor)
-            self.update_taking(old_takes, new_takes, cursor=cursor)
+        # After our pivot, participants don't have receiving (from tips) at all.
+        # taking is updated by the team
+        pass
+
 
     def update_is_free_rider(self, is_free_rider, cursor=None):
         with self.db.get_cursor(cursor) as cursor:
