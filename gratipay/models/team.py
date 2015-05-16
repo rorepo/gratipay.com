@@ -277,6 +277,8 @@ class Team(Model):
     # ==============
 
     def update_receiving(self, cursor=None):
+        old_takes = self.compute_actual_takes(cursor=cursor)
+
         receiving, nsupporters = (cursor or self.db).one("""
             WITH active_subscriptions AS (
                 SELECT amount
@@ -300,3 +302,6 @@ class Team(Model):
         """, dict(slug=self.slug))
 
         self.set_attributes(receiving=receiving, nsupporters=nsupporters)
+
+        new_takes = self.compute_actual_takes(cursor=cursor)
+        self.update_taking(old_takes, new_takes, cursor=cursor)

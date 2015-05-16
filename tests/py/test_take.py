@@ -108,39 +108,46 @@ class Tests(Harness):
         assert takes[1]['balance'] == D('14')
 
     def test_taking_and_receiving_are_updated_correctly(self):
-        team = self.make_team()
+        team = self.make_team(is_approved=True)
+        bob = self.make_participant('bob', claimed_time='now', last_bill_result='')
+        bob.set_subscription_to(team, D('50.00'))
+
         alice = self.make_participant('alice', claimed_time='now')
         self.take_last_week(team, alice, '40.00')
         team.set_take_for(alice, D('42.00'), alice)
-        assert alice.taking == 42
-        assert alice.receiving == 42
-        self.warbucks.set_tip_to(alice, D('10.00'))
-        assert alice.taking == 42
-        assert alice.receiving == 52
+        assert alice.taking == alice.receiving == 42
+
         team.set_take_for(alice, D('50.00'), alice)
-        assert alice.taking == 50
-        assert alice.receiving == 60
+        assert alice.taking == alice.receiving == 50
+
+        team.set_take_for(alice, D('60.00'), alice)
+        assert alice.taking == alice.receiving == 50
 
     def test_changes_to_team_receiving_affect_members_take(self):
-        team = self.make_team()
+        team = self.make_team(is_approved=True)
+        bob = self.make_participant('bob', claimed_time='now', last_bill_result='')
+        bob.set_subscription_to(team, D('50.00'))
+
         alice = self.make_participant('alice', claimed_time='now')
         self.take_last_week(team, alice, '40.00')
         team.set_take_for(alice, D('42.00'), alice)
 
-        self.warbucks.set_tip_to(team, D('10.00'))  # hard times
+        bob.set_subscription_to(team, D('10.00'))  # hard times
         alice = Participant.from_username('alice')
         assert alice.receiving == alice.taking == 10
 
     def test_changes_to_others_take_affects_members_take(self):
-        team = self.make_team()
+        team = self.make_team(is_approved=True)
+        bob = self.make_participant('bob', claimed_time='now', last_bill_result='')
+        bob.set_subscription_to(team, D('100.00'))
 
         alice = self.make_participant('alice', claimed_time='now')
         self.take_last_week(team, alice, '30.00')
         team.set_take_for(alice, D('42.00'), alice)
 
-        bob = self.make_participant('bob', claimed_time='now')
-        self.take_last_week(team, bob, '50.00')
-        team.set_take_for(bob, D('60.00'), bob)
+        carl = self.make_participant('carl', claimed_time='now')
+        self.take_last_week(team, carl, '50.00')
+        team.set_take_for(carl, D('60.00'), carl)
 
         alice = Participant.from_username('alice')
         assert alice.receiving == alice.taking == 40
@@ -149,19 +156,21 @@ class Tests(Harness):
         assert [m['take'] for m in  team.get_members(alice)] == [60, 42, 0]
 
     def test_changes_to_others_take_can_increase_members_take(self):
-        team = self.make_team()
+        team = self.make_team(is_approved=True)
+        bob = self.make_participant('bob', claimed_time='now', last_bill_result='')
+        bob.set_subscription_to(team, D('100.00'))
 
         alice = self.make_participant('alice', claimed_time='now')
         self.take_last_week(team, alice, '30.00')
         team.set_take_for(alice, D('42.00'), alice)
 
-        bob = self.make_participant('bob', claimed_time='now')
-        self.take_last_week(team, bob, '60.00')
-        team.set_take_for(bob, D('80.00'), bob)
+        carl = self.make_participant('carl', claimed_time='now')
+        self.take_last_week(team, carl, '60.00')
+        team.set_take_for(carl, D('80.00'), carl)
         alice = Participant.from_username('alice')
         assert alice.receiving == alice.taking == 20
 
-        team.set_take_for(bob, D('30.00'), bob)
+        team.set_take_for(carl, D('30.00'), carl)
         alice = Participant.from_username('alice')
         assert alice.receiving == alice.taking == 42
 

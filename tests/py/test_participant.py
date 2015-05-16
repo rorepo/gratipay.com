@@ -571,7 +571,7 @@ class Tests(Harness):
 
     # giving, npatrons and receiving
 
-    def test_only_funded_tips_count(self):
+    def test_only_funded_tips_count_for_giving(self):
         alice = self.make_participant('alice', claimed_time='now', last_bill_result='')
         bob = self.make_participant('bob', claimed_time='now')
         carl = self.make_participant('carl', claimed_time='now', last_bill_result="Fail!")
@@ -580,8 +580,6 @@ class Tests(Harness):
         alice.set_subscription_to(team, '3.00') # The only funded tip
         bob.set_subscription_to(team, '5.00')
         carl.set_subscription_to(team, '7.00')
-
-        # TODO - Add team payroll and check receiving values
 
         assert alice.giving == Decimal('3.00')
         assert bob.giving == Decimal('0.00')
@@ -596,8 +594,6 @@ class Tests(Harness):
 
         alice.set_subscription_to(team, '12.00')
         alice.set_subscription_to(team, '4.00')
-
-        # TODO - Add team payroll and check receiving values
 
         assert alice.giving == Decimal('4.00')
 
