@@ -201,7 +201,6 @@ class Participant(Model, MixinTeam):
     def update_number(self, number):
         with self.db.get_cursor() as c:
             add_event(c, 'participant', dict(action='set', id=self.id, values=dict(number=number)))
-            self.remove_all_members(c)
             c.execute("""
                 UPDATE participants
                    SET number=%s
