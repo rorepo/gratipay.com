@@ -450,15 +450,13 @@ class Participant(Model, MixinTeam):
         """Leave all teams by zeroing all takes.
         """
         for team, nmembers in self.get_teams():
-            t = Participant.from_username(team)
+            t = Team.from_slug(team)
             t.set_take_for(self, Decimal(0), self, cursor)
 
 
     def clear_personal_information(self, cursor):
         """Clear personal information such as statements.
         """
-        if self.IS_PLURAL:
-            self.remove_all_members(cursor)
         self.clear_takes(cursor)
         r = cursor.one("""
 
