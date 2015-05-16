@@ -84,7 +84,7 @@ class Team(Model):
                         (ctime, member, team, amount, recorder)
                         (
                             SELECT ctime, member, %(team)s, 0.00, %(recorder)s
-                              FROM current_takes
+                              FROM current_payroll
                              WHERE team=%(team)s
                                AND amount > 0
                         );
@@ -192,7 +192,7 @@ class Team(Model):
             recordername = recorder if hasattr(recorder, 'username') else recorder
             cursor.run("""
 
-                INSERT INTO takes (ctime, member, team, amount, recorder)
+                INSERT INTO payroll (ctime, member, team, amount, recorder)
                      VALUES ( COALESCE (( SELECT ctime
                                             FROM payroll
                                            WHERE member=%(member)s
