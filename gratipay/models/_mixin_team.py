@@ -1,10 +1,5 @@
 """Teams on Gratipay are plural participants with members.
 """
-from collections import OrderedDict
-from decimal import Decimal
-
-from aspen.utils import typecheck
-
 
 class MemberLimitReached(Exception): pass
 
