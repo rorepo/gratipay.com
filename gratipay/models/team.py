@@ -136,7 +136,7 @@ class Team(Model):
         return self.db.one("""
 
             SELECT amount
-              FROM current_payroll
+              FROM payroll
              WHERE team=%s AND member=%s
                AND mtime < (
                        SELECT ts_start
@@ -189,7 +189,7 @@ class Team(Model):
             # Compute the current takes
             old_takes = self.compute_actual_takes(cursor)
             # Insert the new take
-            recordername = recorder if hasattr(recorder, 'username') else recorder
+            recordername = recorder.username if hasattr(recorder, 'username') else recorder
             cursor.run("""
 
                 INSERT INTO payroll (ctime, member, team, amount, recorder)
