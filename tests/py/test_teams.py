@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
-from gratipay.models.team import StubParticipantAdded
 
+from decimal import Decimal
+
+from gratipay.models.team import StubParticipantAdded
 from gratipay.testing import Harness
 from gratipay.security.user import User
 from gratipay.models.team import Team
@@ -117,6 +119,60 @@ class TestNewTeams(Harness):
         assert len(team.get_current_takes()) == 2  # sanity check
         team.remove_all_members()
         assert len(team.get_current_takes()) == 0
+
+    # receiving, nsupporters and payroll
+
+    def test_only_funded_subscriptions_count(self):
+        alice = self.make_participant('alice', claimed_time='now', last_bill_result='')
+        bob = self.make_participant('bob', claimed_time='now')
+        carl = self.make_participant('carl', claimed_time='now', last_bill_result="Fail!")
+        team = self.make_team(is_approved=True)
+
+        alice.set_subscription_to(team, '3.00') # The only funded tip
+        bob.set_subscription_to(team, '5.00')
+        carl.set_subscription_to(team, '7.00')
+
+        assert team.receiving == Decimal('3.00')
+        assert team.nsupporters == 1
+
+        funded_tip = self.db.one("SELECT * FROM subscriptions WHERE is_funded ORDER BY id")
+        assert funded_tip.subscriber == alice.username
+
+    def test_receiving_includes_tips_from_whitelisted_accounts(self):
+        alice = self.make_participant( 'alice'
+                                     , claimed_time='now'
+                                     , last_bill_result=''
+                                     , is_suspicious=False
+                                      )
+        team = self.make_team(is_approved=True)
+        alice.set_subscription_to(team, '3.00')
+
+        assert team.receiving == Decimal('3.00')
+        assert team.nsupporters == 1
+
+    def test_receiving_includes_tips_from_unreviewed_accounts(self):
+        alice = self.make_participant( 'alice'
+                                     , claimed_time='now'
+                                     , last_bill_result=''
+                                     , is_suspicious=None
+                                      )
+        team = self.make_team(is_approved=True)
+        alice.set_subscription_to(team, '3.00')
+
+        assert team.receiving == Decimal('3.00')
+        assert team.nsupporters == 1
+
+    def test_receiving_ignores_tips_from_blacklisted_accounts(self):
+        alice = self.make_participant( 'alice'
+                                     , claimed_time='now'
+                                     , last_bill_result=''
+                                     , is_suspicious=True
+                                      )
+        team = self.make_team(is_approved=True)
+        alice.set_subscription_to(team, '3.00')
+
+        assert team.receiving == Decimal('0.00')
+        assert team.nsupporters == 0
 
 class TestOldTeams(Harness):
 

@@ -57,10 +57,6 @@ class Team(Model):
               owner.username))
 
 
-    def update_receiving(self, cursor=None):
-        # Stubbed out for now. Migrate this over from Participant.
-        pass
-
     # Members
     # =======
 
@@ -276,3 +272,31 @@ class Team(Model):
             take['percentage'] = (actual_amount / budget) if budget > 0 else 0
             actual_takes[take['member']] = take
         return actual_takes
+
+    # Cached amounts
+    # ==============
+
+    def update_receiving(self, cursor=None):
+        receiving, nsupporters = (cursor or self.db).one("""
+            WITH active_subscriptions AS (
+                SELECT amount
+                  FROM current_subscriptions s
+                  JOIN teams t2 ON t2.slug = s.team
+                  JOIN participants p ON p.username = s.subscriber
+                 WHERE team=%(slug)s
+                   AND amount > 0
+                   AND is_funded
+                   AND t2.is_approved
+                   AND p.is_suspicious IS NOT TRUE
+            )
+            UPDATE teams t
+               SET receiving = COALESCE((
+                      SELECT sum(amount)
+                        FROM active_subscriptions
+                   ), 0),
+                   nsupporters = COALESCE((SELECT count(*) FROM active_subscriptions), 0)
+             WHERE t.slug=%(slug)s
+         RETURNING receiving, nsupporters
+        """, dict(slug=self.slug))
+
+        self.set_attributes(receiving=receiving, nsupporters=nsupporters)
