@@ -598,49 +598,6 @@ class Tests(Harness):
         assert alice.giving == Decimal('4.00')
 
 
-    def test_receiving_includes_tips_from_whitelisted_accounts(self):
-        alice = self.make_participant( 'alice'
-                                     , claimed_time='now'
-                                     , last_bill_result=''
-                                     , is_suspicious=False
-                                      )
-        bob = self.make_participant('bob')
-        alice.set_tip_to(bob, '3.00')
-
-        assert bob.receiving == Decimal('3.00')
-        assert bob.npatrons == 1
-
-    def test_receiving_includes_tips_from_unreviewed_accounts(self):
-        alice = self.make_participant( 'alice'
-                                     , claimed_time='now'
-                                     , last_bill_result=''
-                                     , is_suspicious=None
-                                      )
-        bob = self.make_participant('bob')
-        alice.set_tip_to(bob, '3.00')
-
-        assert bob.receiving == Decimal('3.00')
-        assert bob.npatrons == 1
-
-    def test_receiving_ignores_tips_from_blacklisted_accounts(self):
-        alice = self.make_participant( 'alice'
-                                     , claimed_time='now'
-                                     , last_bill_result=''
-                                     , is_suspicious=True
-                                      )
-        bob = self.make_participant('bob')
-        alice.set_tip_to(bob, '3.00')
-
-        assert bob.receiving == Decimal('0.00')
-        assert bob.npatrons == 0
-
-    def test_receiving_includes_taking_when_updated_from_set_tip_to(self):
-        alice = self.make_participant('alice', claimed_time='now', last_bill_result='')
-        bob = self.make_participant('bob', claimed_time='now', taking=Decimal('42.00'))
-        alice.set_tip_to(bob, '3.00')
-        assert Participant.from_username('bob').receiving == bob.receiving == Decimal('45.00')
-
-
     # get_age_in_seconds - gais
 
     def test_gais_gets_age_in_seconds(self):
