@@ -58,6 +58,7 @@ class TestNewTeams(Harness):
         assert team.revenue_model == 'People pay us.'
         assert team.getting_involved == 'People do stuff.'
         assert team.getting_paid == 'We pay people.'
+        assert team.review_url is None
 
     def test_401_for_anon_creating_new_team(self):
         self.post_new(self.valid_data, auth_as=None, expected=401)
