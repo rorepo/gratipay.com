@@ -9,7 +9,7 @@ from gratipay.security.user import User
 from gratipay.models.team import Team, AlreadyMigrated
 
 
-REVIEW_URL = "https://github.com/gratipay/inside.gratipay.com/issues/270"
+REVIEW_URL = "https://github.com/gratipay/review/issues/2"
 
 
 class TestNewTeams(Harness):
