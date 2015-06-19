@@ -8,6 +8,9 @@ from gratipay.security.user import User
 from gratipay.models.team import Team, AlreadyMigrated
 
 
+REVIEW_URL = "https://github.com/gratipay/inside.gratipay.com/issues/270"
+
+
 class TestNewTeams(Harness):
 
     valid_data = {
@@ -43,10 +46,11 @@ class TestNewTeams(Harness):
 
     def test_can_create_new_team(self):
         self.make_participant('alice', claimed_time='now', email_address='', last_ach_result='')
-        self.post_new(dict(self.valid_data))
+        r = self.post_new(dict(self.valid_data))
         team = self.db.one("SELECT * FROM teams")
         assert team
         assert team.owner == 'alice'
+        assert r['review_url'] == team.review_url
 
     def test_all_fields_persist(self):
         self.make_participant('alice', claimed_time='now', email_address='', last_ach_result='')
@@ -58,7 +62,7 @@ class TestNewTeams(Harness):
         assert team.revenue_model == 'People pay us.'
         assert team.getting_involved == 'People do stuff.'
         assert team.getting_paid == 'We pay people.'
-        assert team.review_url is None
+        assert team.review_url == REVIEW_URL
 
     def test_401_for_anon_creating_new_team(self):
         self.post_new(self.valid_data, auth_as=None, expected=401)
@@ -151,6 +155,12 @@ class TestNewTeams(Harness):
 
         subscriptions = self.db.all("SELECT * FROM subscriptions")
         assert len(subscriptions) == 1
+
+    def test_team_can_generate_review_url(self):
+        team = self.make_team()
+        review_url = team.generate_review_url()
+        assert review_url == REVIEW_URL
+
 
 class TestOldTeams(Harness):
 
