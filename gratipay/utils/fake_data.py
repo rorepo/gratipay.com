@@ -10,6 +10,7 @@ from psycopg2 import IntegrityError
 from gratipay import wireup, MAX_TIP, MIN_TIP
 from gratipay.elsewhere import PLATFORMS
 from gratipay.models.participant import Participant
+from gratipay.models.team import Team
 from gratipay.models import community
 from gratipay.models import check_db
 
@@ -71,6 +72,35 @@ def fake_participant(db, number="singular", is_admin=False):
 
     #Call participant constructor to perform other DB initialization
     return Participant.from_username(username)
+
+
+def fake_team(db, teamowner):
+    """Create a fake team
+    """
+    teamname = faker.first_name() + fake_text_id(3)
+    teamslugname = faker.city() # + fake_text_id(3)
+
+    try:
+        #using community.slugize
+        teamslug = community.slugize(teamslugname)
+        _fake_thing( db
+                   , "teams"
+                   , slug=teamslug
+                   , slug_lower=teamslug.lower()
+                   , name=teamname
+                   , homepage='www.example.org/' + fake_text_id(3)
+                   , product_or_service='service'
+                   , getting_involved='build'
+                   , getting_paid='paypal'
+                   , owner=teamowner.username
+                   , is_approved=True
+                   , receiving=0.1
+                   , nmembers=3
+                   )
+    except IntegrityError:
+        return fake_team(db, teamowner)
+
+    return Team.from_slug(teamslug)
 
 
 def fake_community(db, creator):
@@ -237,13 +267,11 @@ def populate_db(db, num_participants=100, num_tips=200, num_teams=5, num_transfe
         participants.append(fake_participant(db))
 
     print("Making Teams")
-    for i in xrange(num_teams):
-        team = fake_participant(db, number="plural")
-        #Add 1 to 3 members to the team
-        members = random.sample(participants, random.randint(1, 3))
-        for p in members:
-            team.add_member(p)
-        participants.append(team)
+    teams = []
+    teamowners = random.sample(participants, random.randint(1, num_teams))
+    print("team owners: ",len(teamowners))
+    for teamowner in teamowners:
+        teams.append(fake_team(db, teamowner))
 
     print("Making Elsewheres")
     for p in participants:
