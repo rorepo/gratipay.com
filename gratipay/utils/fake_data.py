@@ -77,8 +77,11 @@ def fake_participant(db, number="singular", is_admin=False):
 def fake_team(db, teamowner):
     """Create a fake team
     """
+    isapproved = [True, False]
+    productorservice = ['Product','Service']
+
     teamname = faker.first_name() + fake_text_id(3)
-    teamslugname = faker.city() # + fake_text_id(3)
+    teamslugname = faker.city() 
 
     try:
         #using community.slugize
@@ -89,11 +92,11 @@ def fake_team(db, teamowner):
                    , slug_lower=teamslug.lower()
                    , name=teamname
                    , homepage='www.example.org/' + fake_text_id(3)
-                   , product_or_service='service'
+                   , product_or_service=random.sample(productorservice,1)[0]
                    , getting_involved='build'
                    , getting_paid='paypal'
                    , owner=teamowner.username
-                   , is_approved=True
+                   , is_approved=random.sample(isapproved,1)[0]
                    , receiving=0.1
                    , nmembers=3
                    )
@@ -268,8 +271,7 @@ def populate_db(db, num_participants=100, num_tips=200, num_teams=5, num_transfe
 
     print("Making Teams")
     teams = []
-    teamowners = random.sample(participants, random.randint(1, num_teams))
-    print("team owners: ",len(teamowners))
+    teamowners = random.sample(participants, num_teams)
     for teamowner in teamowners:
         teams.append(fake_team(db, teamowner))
 
