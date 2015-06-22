@@ -105,6 +105,17 @@ def fake_team(db, teamowner):
 
     return Team.from_slug(teamslug)
 
+def fake_subscription(db, subscriber, subscribee):
+    """Create a fake subscription
+    """
+    return _fake_thing( db
+                      , "subscriptions"
+                      , ctime=faker.date_time_this_year()
+                      , mtime=faker.date_time_this_month()
+                      , subscriber=subscriber.username
+                      , team=subscribee.slug
+                      , amount=fake_tip_amount()
+                       )
 
 def fake_community(db, creator):
     """Create a fake community
@@ -274,6 +285,20 @@ def populate_db(db, num_participants=100, num_tips=200, num_teams=5, num_transfe
     teamowners = random.sample(participants, num_teams)
     for teamowner in teamowners:
         teams.append(fake_team(db, teamowner))
+
+    print("Making Subscriptions")
+    subscriptioncount = 0
+    for participant in participants:
+        for team in teams:
+            #eliminate self-subscription
+            if participant.username != team.owner:
+                subscriptioncount += 1
+                if subscriptioncount > num_tips:
+                    break
+                fake_subscription(db, participant, team)
+        if subscriptioncount > num_tips:
+            break
+     
 
     print("Making Elsewheres")
     for p in participants:

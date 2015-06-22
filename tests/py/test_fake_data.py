@@ -19,7 +19,12 @@ class TestFakeData(Harness):
         participants = self.db.all("SELECT * FROM participants")
         transfers = self.db.all("SELECT * FROM transfers")
         teams = self.db.all("SELECT * FROM teams")
+        subscriptions = self.db.all("SELECT * FROM subscriptions")
         assert len(tips) == num_tips
         assert len(participants) == num_participants
         assert len(transfers) == num_transfers
         assert len(teams) == num_teams
+        if num_tips <= num_participants - num_teams:
+            assert len(subscriptions) == num_tips
+        else:
+            assert len(subscriptions) == (num_participants - num_teams) 
